@@ -5,9 +5,9 @@
 #include <sstream>
 #include <string>
 #include <iomanip>
+#include <numbers>
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
-#include <math>
 
 #include <nanobind/eigen/dense.h>
 #include <nanobind/eigen/sparse.h>
@@ -19,6 +19,7 @@
 
 namespace py = nanobind;
 
+const real pi_real = std::numbers::pi_v<real>;
 
 
 
@@ -396,7 +397,7 @@ Matrix c_lubrication::WallResistMatrix(real r_norm, real mob_factor[3], std::vec
     Ya_asym = -(8.0/15.0)*log(epsilon) + 0.9588;
     Yb_asym = -(-(1.0/10.0)*log(epsilon)-0.1895) - 0.4576*epsilon;
     Yb_asym *= 4./3.;
-    Xc_asym = 1.2020569 - 3.0*(M_PI*M_PI/6.0-1.0)*epsilon;
+    Xc_asym = 1.2020569 - 3.0*(pi_real*pi_real/6.0-1.0)*epsilon;
     Xc_asym *= 4./3.;
     Yc_asym = -2.0/5.0*log(epsilon) + 0.3817 + 1.4578*epsilon;
     Yc_asym *= 4./3.;
@@ -586,7 +587,7 @@ void c_lubrication::ResistPairLub_py(real r_norm, real a, real eta, std::vector<
 {
     Vector3 r_hat_E; 
     r_hat_E << r_hat.at(0), r_hat.at(1), r_hat.at(2);
-    real mob_factor[3] = {(6.0*M_PI*eta*a), (6.0*M_PI*eta*a*a), (6.0*M_PI*eta*a*a*a)};
+    real mob_factor[3] = {(6.0*pi_real*eta*a), (6.0*pi_real*eta*a*a), (6.0*pi_real*eta*a*a*a)};
     Matrix R = ResistPairLub(r_norm, mob_factor, r_hat_E);
         {std::cout << "[" << mob_factor[0] << " " << mob_factor[1] << " " << mob_factor[2] << "]" << std::endl;}
 	{std::cout << "[" << r_hat_E[0] << " " << r_hat_E[1] << " " << r_hat_E[2] << "]" << std::endl;}
@@ -598,7 +599,7 @@ void c_lubrication::ResistCOO(Matrix r_vectors, IMatrix n_list, real a, real eta
                              std::vector<real>& data, std::vector<int>& rows, std::vector<int>& cols)
 {
   int num_bodies = r_vectors.size();
-  real mob_factor[3] = {(6.0*M_PI*eta*a), (6.0*M_PI*eta*a*a), (6.0*M_PI*eta*a*a*a)};
+  real mob_factor[3] = {(6.0*pi_real*eta*a), (6.0*pi_real*eta*a*a), (6.0*pi_real*eta*a*a*a)};
   std::vector<real> L = periodic_length;
   int k, num_neighbors;
   Vector3 r_jk, r_hat;
@@ -736,7 +737,7 @@ void c_lubrication::ResistCOO_wall(Matrix r_vectors, real a, real eta, real wall
                     std::vector<int>& rows, std::vector<int>& cols)
 {
   int num_bodies = r_vectors.size();
-  real mob_factor[3] = {(6.0*M_PI*eta*a), (6.0*M_PI*eta*a*a), (6.0*M_PI*eta*a*a*a)};
+  real mob_factor[3] = {(6.0*pi_real*eta*a), (6.0*pi_real*eta*a*a), (6.0*pi_real*eta*a*a*a)};
   std::vector<real> L = periodic_length;
   real r_norm, height;
   Matrix R_wall;
@@ -782,7 +783,7 @@ void c_lubrication::Set_R_Mats(Matrix r_vecs, IMatrix neighbors, real a, real et
 
   int num_particles = r_vecs.size();
 
-  real small = 0.5*6.0*M_PI*eta*a*tolerance;
+  real small = 0.5*6.0*pi_real*eta*a*tolerance;
 
   std::vector<real> data;
   std::vector<int> rows, cols;
