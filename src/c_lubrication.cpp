@@ -517,7 +517,7 @@ Matrix c_lubrication::ResistPairLub(real r_norm, real mob_factor[3], Vector3 r_h
     real AT_cutoff = (2+0.006-1e-8);
     real WS_cutoff = (2+0.1+1e-8);
     bool inv;
-    real res_factor[3] = {1.0/mob_factor[0], 1.0/mob_factor[1], 1.0/mob_factor[2]};
+    real res_factor[3] = {1.0f/mob_factor[0], 1.0f/mob_factor[1], 1.0f/mob_factor[2]};
     Matrix R(12,12);
     
     real epsilon = r_norm-2.0;
