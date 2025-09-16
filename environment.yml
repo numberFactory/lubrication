@@ -4,7 +4,7 @@ channels:
   - nodefaults
 dependencies:
   - python>=3.8
-  - pybind11
+  - nanobind
   - pytest
   - numpy
   - eigen

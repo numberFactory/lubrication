@@ -8,14 +8,15 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 
-#include <pybind11/pybind11.h>
-#include <pybind11/numpy.h>
-#include <pybind11/stl.h>
-#include <pybind11/eigen.h>
+#include <nanobind/eigen/dense.h>
+#include <nanobind/eigen/sparse.h>
+#include <nanobind/nanobind.h>
+#include <nanobind/ndarray.h>
+#include <nanobind/stl/vector.h>
 
 #include "eigen_defines.h"
 
-namespace py = pybind11;
+namespace py = nanobind;
 
 
 
@@ -56,13 +57,13 @@ class c_lubrication
   real cutoff_wall = 1.0e10;
 
   public:
-  void Set_R_Mats(py::list r_vecs, py::list neighbors, real a, real eta, real cutoff, real cutoff_wall, 
+  void Set_R_Mats(Matrix r_vecs, IMatrix neighbors, real a, real eta, real cutoff, real cutoff_wall, 
         std::vector<real> periodic_length, bool Sup_if_true);
-  void ResistPairLub_py(real r_norm, real a, real eta, py::array_t<real> r_hat);
-  void ResistCOO(py::list r_vectors, py::list n_list, real a, real eta, real cutoff, real wall_cutoff, 
+  void ResistPairLub_py(real r_norm, real a, real eta, std::vector<real> r_hat);
+  void ResistCOO(Matrix r_vectors, IMatrix n_list, real a, real eta, real cutoff, real wall_cutoff, 
         std::vector<real> periodic_length, bool Sup_if_true, std::vector<real>& data, std::vector<int>& rows, 
         std::vector<int>& cols);
-  void ResistCOO_wall(py::list r_vectors, real a, real eta, real wall_cutoff, std::vector<real> periodic_length, 
+  void ResistCOO_wall(Matrix r_vectors, real a, real eta, real wall_cutoff, std::vector<real> periodic_length, 
         bool Sup_if_true, std::vector<real>& data, std::vector<int>& rows, std::vector<int>& cols);
   real debye_cut;
   c_lubrication(real d_cut);
@@ -580,7 +581,7 @@ Matrix c_lubrication::ResistPairBlob(real r_norm, real mob_factor[3], Vector3 r_
 }
 
 // TODO remove, just for testing?
-void c_lubrication::ResistPairLub_py(real r_norm, real a, real eta, py::array_t<real> r_hat)
+void c_lubrication::ResistPairLub_py(real r_norm, real a, real eta, std::vector<real> r_hat)
 {
     Vector3 r_hat_E; 
     r_hat_E << r_hat.at(0), r_hat.at(1), r_hat.at(2);
@@ -591,7 +592,7 @@ void c_lubrication::ResistPairLub_py(real r_norm, real a, real eta, py::array_t<
 	{std::cout << r_norm << "\n"; std::cout << R << std::endl; }
 }
 
-void c_lubrication::ResistCOO(py::list r_vectors, py::list n_list, real a, real eta, real cutoff, 
+void c_lubrication::ResistCOO(Matrix r_vectors, IMatrix n_list, real a, real eta, real cutoff, 
                              real wall_cutoff, std::vector<real> periodic_length, bool Sup_if_true, 
                              std::vector<real>& data, std::vector<int>& rows, std::vector<int>& cols)
 {
@@ -607,8 +608,8 @@ void c_lubrication::ResistCOO(py::list r_vectors, py::list n_list, real a, real 
   
   for(int j = 0; j < num_bodies; j++)
   {
-    py::array_t<real> r_j = py::cast<py::array_t<real>>(r_vectors[j]);
-    height = r_j.at(2);
+    auto r_j = r_vectors.row(j);
+    height = r_j[2];
     height /= a;
     
       if(height < wall_cutoff)
@@ -637,18 +638,18 @@ void c_lubrication::ResistCOO(py::list r_vectors, py::list n_list, real a, real 
 	} // row
       }// if wall_cutoff
       
-      py::array_t<int> neighbors = py::cast<py::array_t<int>>(n_list[j]);
+      auto neighbors = n_list.row(j);
       num_neighbors = neighbors.size();
       if(num_neighbors == 0){continue;}
       
       for(int k_ind = 0; k_ind < neighbors.size(); k_ind++)
       {
-	k = neighbors.at(k_ind);
+	k = neighbors[k_ind];
 	
-	py::array_t<real> r_k = py::cast<py::array_t<real>>(r_vectors[k]);
+	auto r_k = r_vectors.row(k);
 	for(int l = 0; l < 3; ++l)
 	{
-	  r_jk[l] = (r_j.at(l) - r_k.at(l));
+	  r_jk[l] = (r_j[l] - r_k[l]);
 	  if(L.at(l) > 0)
 	  {
 	    r_jk[l] = r_jk[l] - int(r_jk[l] / L.at(l) + 0.5 * (int(r_jk[l]>0) - int(r_jk[l]<0))) * L.at(l);
@@ -729,7 +730,7 @@ void c_lubrication::ResistCOO(py::list r_vectors, py::list n_list, real a, real 
   
 }
 
-void c_lubrication::ResistCOO_wall(py::list r_vectors, real a, real eta, real wall_cutoff, 
+void c_lubrication::ResistCOO_wall(Matrix r_vectors, real a, real eta, real wall_cutoff, 
                     std::vector<real> periodic_length, bool Sup_if_true, std::vector<real>& data, 
                     std::vector<int>& rows, std::vector<int>& cols)
 {
@@ -743,9 +744,9 @@ void c_lubrication::ResistCOO_wall(py::list r_vectors, real a, real eta, real wa
   
   for(int j = 0; j < num_bodies; j++)
   {
-    py::array_t<real> r_j = py::cast<py::array_t<real>>(r_vectors[j]);
+    auto r_j = r_vectors.row(j);
     
-    height = r_j.at(2);
+    height = r_j[2];
     height /= a;
     
     if(height < wall_cutoff){continue;}
@@ -775,7 +776,7 @@ void c_lubrication::ResistCOO_wall(py::list r_vectors, real a, real eta, real wa
   } // j loop
 }
 
-void c_lubrication::Set_R_Mats(py::list r_vecs, py::list neighbors, real a, real eta, real cutoff, 
+void c_lubrication::Set_R_Mats(Matrix r_vecs, IMatrix neighbors, real a, real eta, real cutoff, 
                               real cutoff_wall, std::vector<real> periodic_length, bool Sup_if_true){
 
   int num_particles = r_vecs.size();
@@ -877,9 +878,7 @@ SpMatrix c_lubrication::lub_print(){
   return Delta_R;
 }
 
-using namespace pybind11::literals;
-namespace py = pybind11;
-PYBIND11_MODULE(c_lubrication, m) {
+NB_MODULE(c_lubrication, m) {
   m.doc() = "c_lubrication class code";
   py::class_<c_lubrication>(m, "c_lubrication")
   .def(py::init<real>()) // c_lubrication::c_lubrication constructor

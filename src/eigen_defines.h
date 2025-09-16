@@ -10,6 +10,8 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 
+typedef Eigen::MatrixXi IMatrix;
+
 #ifdef SINGLE_PRECISION
 using real = float;
 typedef Eigen::MatrixXf Matrix;

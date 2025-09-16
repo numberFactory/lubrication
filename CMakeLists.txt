@@ -16,15 +16,13 @@ set(BLA_VENDOR Generic)
 # find_package(LAPACK REQUIRED)
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
 find_package (Eigen3 REQUIRED NO_MODULE)
-find_package(pybind11 REQUIRED CONFIG)
-include_directories(${pybind11_INCLUDE_DIRS})
 include_directories(${Python_INCLUDE_DIRS})
 # include_directories($ENV{CONDA_PREFIX}/include)
 
-if(APPLE) # for pybind11 on mac
-  set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS
-      "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
-endif()
+# if(APPLE) # for pybind11 on mac
+  # set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS
+      # "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
+# endif()
 
 if(DOUBLEPRECISION)
   add_compile_definitions(PUBLIC DOUBLE_PRECISION)
@@ -34,13 +32,20 @@ if(NOT Python_SOABI)
   message(FATAL_ERROR "Python_SOABI is empty. Set it to the output of 'python-config --extension-suffix'")
 endif()
 
-add_library(c_lubrication.${Python_SOABI} SHARED ${SOURCES})
+execute_process(
+  COMMAND "${Python_EXECUTABLE}" -m nanobind --cmake_dir
+  OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE nanobind_DIR)
+message(STATUS "python executable: ${Python_EXECUTABLE}")
+message(STATUS "nanobind_DIR: ${nanobind_DIR}")
+find_package(nanobind CONFIG REQUIRED)
+nanobind_add_module(c_lubrication.${Python_SOABI} ${SOURCES})
+
 set_target_properties(c_lubrication.${Python_SOABI} PROPERTIES SUFFIX ".so") # force .so suffix for mac
 set_target_properties(c_lubrication.${Python_SOABI} PROPERTIES PREFIX "") # remove the lib prefix
 
-target_compile_options(c_lubrication.${Python_SOABI} PRIVATE -fPIC -O3 -Wall)
+target_compile_options(c_lubrication.${Python_SOABI} PRIVATE -fPIC -O3) # -Wall
 
-target_link_libraries(c_lubrication.${Python_SOABI} PRIVATE pybind11::pybind11 Eigen3::Eigen)
+target_link_libraries(c_lubrication.${Python_SOABI} PRIVATE Eigen3::Eigen)
 
 install(TARGETS c_lubrication.${Python_SOABI} DESTINATION ${Python_SITEARCH}/Lubrication)
 # file(GLOB PYTHON_SOURCES src/*.py)
