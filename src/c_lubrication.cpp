@@ -587,7 +587,7 @@ void c_lubrication::ResistPairLub_py(real r_norm, real a, real eta, std::vector<
 {
     Vector3 r_hat_E; 
     r_hat_E << r_hat.at(0), r_hat.at(1), r_hat.at(2);
-    real mob_factor[3] = {(6.0*pi_real*eta*a), (6.0*pi_real*eta*a*a), (6.0*pi_real*eta*a*a*a)};
+    real mob_factor[3] = {(6.0f*pi_real*eta*a), (6.0f*pi_real*eta*a*a), (6.0f*pi_real*eta*a*a*a)};
     Matrix R = ResistPairLub(r_norm, mob_factor, r_hat_E);
         {std::cout << "[" << mob_factor[0] << " " << mob_factor[1] << " " << mob_factor[2] << "]" << std::endl;}
 	{std::cout << "[" << r_hat_E[0] << " " << r_hat_E[1] << " " << r_hat_E[2] << "]" << std::endl;}
@@ -599,7 +599,7 @@ void c_lubrication::ResistCOO(Matrix r_vectors, IMatrix n_list, real a, real eta
                              std::vector<real>& data, std::vector<int>& rows, std::vector<int>& cols)
 {
   int num_bodies = r_vectors.size();
-  real mob_factor[3] = {(6.0*pi_real*eta*a), (6.0*pi_real*eta*a*a), (6.0*pi_real*eta*a*a*a)};
+  real mob_factor[3] = {(6.0f*pi_real*eta*a), (6.0f*pi_real*eta*a*a), (6.0f*pi_real*eta*a*a*a)};
   std::vector<real> L = periodic_length;
   int k, num_neighbors;
   Vector3 r_jk, r_hat;
@@ -737,7 +737,7 @@ void c_lubrication::ResistCOO_wall(Matrix r_vectors, real a, real eta, real wall
                     std::vector<int>& rows, std::vector<int>& cols)
 {
   int num_bodies = r_vectors.size();
-  real mob_factor[3] = {(6.0*pi_real*eta*a), (6.0*pi_real*eta*a*a), (6.0*pi_real*eta*a*a*a)};
+  real mob_factor[3] = {(6.0f*pi_real*eta*a), (6.0f*pi_real*eta*a*a), (6.0f*pi_real*eta*a*a*a)};
   std::vector<real> L = periodic_length;
   real r_norm, height;
   Matrix R_wall;
@@ -783,7 +783,7 @@ void c_lubrication::Set_R_Mats(Matrix r_vecs, IMatrix neighbors, real a, real et
 
   int num_particles = r_vecs.size();
 
-  real small = 0.5*6.0*pi_real*eta*a*tolerance;
+  real small = 0.5*6.0f*pi_real*eta*a*tolerance;
 
   std::vector<real> data;
   std::vector<int> rows, cols;
