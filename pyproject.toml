@@ -1,0 +1,15 @@
+[build-system]
+requires = [
+    "scikit-build-core>=0.5.0",
+    "nanobind>=2.0",
+]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "lubrication"
+version = "0.1.0"
+description = "Lubrication corrections for Stokesian dynamics"
+requires-python = ">=3.8"
+
+[tool.scikit-build.cmake.define]
+DOUBLEPRECISION = "0"

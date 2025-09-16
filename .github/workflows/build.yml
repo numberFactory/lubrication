@@ -1,0 +1,40 @@
+name: build
+
+
+on:
+    push:
+      branches: [ main ]
+    pull_request:
+      branches: [ main ]
+    schedule:
+      # Run every Sunday at midnight
+      - cron:  '0 0 * * 0'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install Mamba
+      uses: mamba-org/setup-micromamba@v2
+      with:
+        environment-file: environment.yml
+        cache-environment: false
+        cache-downloads: true
+        generate-run-shell: true
+        
+    - name: Install via pip
+      run: |
+        pip install -v .
+      shell: micromamba-shell {0}
+
+    - name: Run tests
+      run: |
+        pytest -sv tests
+      shell: micromamba-shell {0}
