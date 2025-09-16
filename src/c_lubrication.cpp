@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
+#include <math>
 
 #include <nanobind/eigen/dense.h>
 #include <nanobind/eigen/sparse.h>
